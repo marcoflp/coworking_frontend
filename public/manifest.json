@@ -1,0 +1,9 @@
+{
+  "name": "Coworking Reservations",
+  "short_name": "Coworking",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d6efd",
+  "icons": []
+}
