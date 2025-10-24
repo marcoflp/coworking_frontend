@@ -33,8 +33,8 @@ export default function Reservas() {
       const dados = {
         usuario_id: parseInt(formulario.usuario_id),
         sala_id: parseInt(formulario.sala_id),
-        horario_inicio: formulario.horario_inicio,
-        horario_fim: formulario.horario_fim,
+        horario_inicio: new Date(formulario.horario_inicio).toISOString(),
+        horario_fim: new Date(formulario.horario_fim).toISOString(),
         proposito: formulario.proposito
       };
       
