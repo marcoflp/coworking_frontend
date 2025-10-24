@@ -7,8 +7,13 @@ export default function Salas() {
   const [erro, setErro] = useState(null);
 
   async function carregar() {
-    const dados = await buscarJSON('/salas');
-    setSalas(dados);
+    try {
+      const dados = await buscarJSON('/salas');
+      console.log('Salas carregadas:', dados);
+      setSalas(dados);
+    } catch (err) {
+      console.error('Erro ao carregar salas:', err);
+    }
   }
 
   useEffect(() => {
