@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { buscarJSON } from '../servicos/api';
+import Modal from './Modal';
 
 export default function Salas() {
   const [salas, setSalas] = useState([]);
   const [formulario, setFormulario] = useState({ nome: '', capacidade: 1, localizacao: '', recursos: '' });
   const [erro, setErro] = useState(null);
+  const [modalAberto, setModalAberto] = useState(false);
 
   async function carregar() {
     try {
       const dados = await buscarJSON('/salas');
-      console.log('Salas carregadas:', dados);
       setSalas(dados);
     } catch (err) {
       console.error('Erro ao carregar salas:', err);
@@ -20,46 +21,40 @@ export default function Salas() {
     carregar();
   }, []);
 
-  async function criar(e) {
+  async function salvar(e) {
     e.preventDefault();
     setErro(null);
     try {
-      const dados = {
-        ...formulario,
-        horario_inicio: new Date().toISOString(),
-        horario_fim: new Date().toISOString()
-      };
-      await buscarJSON('/salas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-      });
+      if (formulario.id) {
+        await buscarJSON('/salas/' + formulario.id, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formulario)
+        });
+      } else {
+        const dados = {
+          ...formulario,
+          horario_inicio: new Date().toISOString(),
+          horario_fim: new Date().toISOString()
+        };
+        await buscarJSON('/salas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dados)
+        });
+      }
       setFormulario({ nome: '', capacidade: 1, localizacao: '', recursos: '' });
+      setModalAberto(false);
       carregar();
     } catch (err) {
-      console.error('Erro completo:', err);
-      setErro(err.erro || err.message || 'Erro ao criar sala');
+      setErro(err.erro || err.message || 'Erro ao salvar sala');
     }
   }
 
-  async function atualizar(e) {
-    e.preventDefault();
+  function abrirModal(sala = null) {
+    setFormulario(sala || { nome: '', capacidade: 1, localizacao: '', recursos: '' });
     setErro(null);
-    try {
-      await buscarJSON('/salas/' + formulario.id, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formulario)
-      });
-      setFormulario({ nome: '', capacidade: 1, localizacao: '', recursos: '' });
-      carregar();
-    } catch (err) {
-      setErro(err.erro || err.message);
-    }
-  }
-
-  function editar(sala) {
-    setFormulario(sala);
+    setModalAberto(true);
   }
 
   async function remover(id) {
@@ -71,38 +66,8 @@ export default function Salas() {
   return (
     <div>
       <h2>Salas</h2>
-      {erro && <div className="erro">{erro}</div>}
-      <form onSubmit={formulario.id ? atualizar : criar}>
-        <input
-          placeholder="Nome"
-          value={formulario.nome}
-          onChange={e => setFormulario({ ...formulario, nome: e.target.value })}
-          required
-        />
-        <input
-          type="number"
-          placeholder="Capacidade"
-          value={formulario.capacidade}
-          onChange={e => setFormulario({ ...formulario, capacidade: parseInt(e.target.value || 1) })}
-          required
-        />
-        <input
-          placeholder="Localização"
-          value={formulario.localizacao}
-          onChange={e => setFormulario({ ...formulario, localizacao: e.target.value })}
-        />
-        <input
-          placeholder="Recursos (separados por vírgula)"
-          value={formulario.recursos}
-          onChange={e => setFormulario({ ...formulario, recursos: e.target.value })}
-        />
-        <button type="submit">{formulario.id ? 'Atualizar' : 'Criar'}</button>
-        {formulario.id && (
-          <button type="button" onClick={() => setFormulario({ nome: '', capacidade: 1, localizacao: '', recursos: '' })}>
-            Cancelar
-          </button>
-        )}
-      </form>
+      <button className="btn-criar" onClick={() => abrirModal()}>+ Nova Sala</button>
+      
       <table>
         <thead>
           <tr>
@@ -123,13 +88,50 @@ export default function Salas() {
               <td>{s.localizacao}</td>
               <td>{s.recursos}</td>
               <td>
-                <button onClick={() => editar(s)}>Editar</button>
+                <button onClick={() => abrirModal(s)}>Editar</button>
                 <button onClick={() => remover(s.id)}>Deletar</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <Modal 
+        aberto={modalAberto} 
+        fechar={() => setModalAberto(false)}
+        titulo={formulario.id ? 'Editar Sala' : 'Nova Sala'}
+      >
+        {erro && <div className="erro">{erro}</div>}
+        <form onSubmit={salvar}>
+          <input
+            placeholder="Nome"
+            value={formulario.nome}
+            onChange={e => setFormulario({ ...formulario, nome: e.target.value })}
+            required
+          />
+          <input
+            type="number"
+            placeholder="Capacidade"
+            value={formulario.capacidade}
+            onChange={e => setFormulario({ ...formulario, capacidade: parseInt(e.target.value || 1) })}
+            required
+          />
+          <input
+            placeholder="Localização"
+            value={formulario.localizacao}
+            onChange={e => setFormulario({ ...formulario, localizacao: e.target.value })}
+          />
+          <input
+            placeholder="Recursos (separados por vírgula)"
+            value={formulario.recursos}
+            onChange={e => setFormulario({ ...formulario, recursos: e.target.value })}
+          />
+          <div className="form-actions">
+            <button type="submit" className="btn-submit">{formulario.id ? 'Atualizar' : 'Criar'}</button>
+            <button type="button" className="btn-cancel" onClick={() => setModalAberto(false)}>Cancelar</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
