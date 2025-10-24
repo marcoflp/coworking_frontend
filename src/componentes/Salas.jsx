@@ -19,15 +19,21 @@ export default function Salas() {
     e.preventDefault();
     setErro(null);
     try {
+      const dados = {
+        ...formulario,
+        horario_inicio: new Date().toISOString(),
+        horario_fim: new Date().toISOString()
+      };
       await buscarJSON('/salas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formulario)
+        body: JSON.stringify(dados)
       });
       setFormulario({ nome: '', capacidade: 1, localizacao: '', recursos: '' });
       carregar();
     } catch (err) {
-      setErro(err.erro || err.message);
+      console.error('Erro completo:', err);
+      setErro(err.erro || err.message || 'Erro ao criar sala');
     }
   }
 

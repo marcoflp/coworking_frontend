@@ -1,6 +1,8 @@
 const API = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 export async function buscarJSON(url, opcoes) {
+  console.log('API URL:', API);
+  console.log('Chamando:', API + url);
   const resposta = await fetch(API + url, opcoes);
   const texto = await resposta.text();
   try {
