@@ -1,24 +1,52 @@
-const API = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+import axios from 'axios';
 
-export async function buscarJSON(url, opcoes) {
-  console.log('API URL:', API);
-  console.log('Chamando:', API + url);
-  try {
-    const resposta = await fetch(API + url, opcoes);
-    console.log('Status:', resposta.status);
-    const texto = await resposta.text();
-    console.log('Resposta:', texto);
-    
-    if (!texto) {
-      if (!resposta.ok) throw { erro: `Erro ${resposta.status}: ${resposta.statusText}` };
-      return [];
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
+export const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Interceptor para adicionar token automaticamente
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    const json = JSON.parse(texto);
-    if (!resposta.ok) throw json;
-    return json;
-  } catch (erro) {
-    console.error('Erro na requisição:', erro);
-    throw erro;
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor para tratar erros de autenticação
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      window.location.reload();
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Função legacy para compatibilidade
+export async function buscarJSON(url, opcoes) {
+  try {
+    const response = await api({
+      url,
+      method: opcoes?.method || 'GET',
+      data: opcoes?.body ? JSON.parse(opcoes.body) : undefined,
+      headers: opcoes?.headers
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
 }

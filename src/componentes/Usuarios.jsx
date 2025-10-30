@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { buscarJSON } from '../servicos/api';
+import { api } from '../servicos/api';
+import { useAuth } from '../contextos/AuthContext';
 import Modal from './Modal';
 
 export default function Usuarios() {
@@ -7,10 +8,15 @@ export default function Usuarios() {
   const [formulario, setFormulario] = useState({ nome: '', email: '', telefone: '' });
   const [erro, setErro] = useState(null);
   const [modalAberto, setModalAberto] = useState(false);
+  const { isAdmin, usuario } = useAuth();
 
   async function carregar() {
-    const dados = await buscarJSON('/usuarios');
-    setUsuarios(dados);
+    try {
+      const response = await api.get('/usuarios');
+      setUsuarios(response.data);
+    } catch (error) {
+      setErro('Erro ao carregar usuários');
+    }
   }
 
   useEffect(() => {
@@ -22,23 +28,15 @@ export default function Usuarios() {
     setErro(null);
     try {
       if (formulario.id) {
-        await buscarJSON('/usuarios/' + formulario.id, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formulario)
-        });
+        await api.patch(`/usuarios/${formulario.id}`, formulario);
       } else {
-        await buscarJSON('/usuarios', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formulario)
-        });
+        await api.post('/usuarios', formulario);
       }
       setFormulario({ nome: '', email: '', telefone: '' });
       setModalAberto(false);
       carregar();
     } catch (err) {
-      setErro(err.erro || err.message);
+      setErro(err.response?.data?.erro || err.message);
     }
   }
 
@@ -50,8 +48,12 @@ export default function Usuarios() {
 
   async function remover(id) {
     if (!confirm('Deletar usuário?')) return;
-    await buscarJSON('/usuarios/' + id, { method: 'DELETE' });
-    carregar();
+    try {
+      await api.delete(`/usuarios/${id}`);
+      carregar();
+    } catch (error) {
+      setErro('Erro ao deletar usuário');
+    }
   }
 
   return (
@@ -77,8 +79,12 @@ export default function Usuarios() {
               <td>{u.email}</td>
               <td>{u.telefone}</td>
               <td>
-                <button onClick={() => abrirModal(u)}>Editar</button>
-                <button onClick={() => remover(u.id)}>Deletar</button>
+                {(isAdmin() || u.id === usuario.id) && (
+                  <button onClick={() => abrirModal(u)}>Editar</button>
+                )}
+                {isAdmin() && (
+                  <button onClick={() => remover(u.id)}>Deletar</button>
+                )}
               </td>
             </tr>
           ))}
