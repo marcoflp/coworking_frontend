@@ -403,3 +403,87 @@ input:focus, select:focus {
   color: white;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
+
+.perfil-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.perfil-card {
+  background: #f8f9ff;
+  padding: 30px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.perfil-info {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.perfil-info p {
+  margin: 8px 0;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.form-group input:disabled {
+  background: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.perfil-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.btn-editar, .btn-salvar, .btn-cancelar {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-editar {
+  background: #667eea;
+  color: white;
+}
+
+.btn-editar:hover {
+  background: #764ba2;
+}
+
+.btn-salvar {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-salvar:hover {
+  background: #45a049;
+}
+
+.btn-cancelar {
+  background: #e0e0e0;
+  color: #666;
+}
+
+.btn-cancelar:hover {
+  background: #d0d0d0;
+}

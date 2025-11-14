@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contextos/AuthContext';
 import Usuarios from './componentes/Usuarios';
 import Salas from './componentes/Salas';
 import Reservas from './componentes/Reservas';
+import MeuPerfil from './componentes/MeuPerfil';
 import Auth from './componentes/Auth';
 
 function AppContent() {
@@ -29,12 +30,14 @@ function AppContent() {
           <button onClick={() => setPagina('salas')}>Salas</button>
           <button onClick={() => setPagina('usuarios')}>Usuários</button>
           <button onClick={() => setPagina('reservas')}>Reservas</button>
+          <button onClick={() => setPagina('perfil')}>Meu Perfil</button>
         </nav>
       </header>
       <main>
         {pagina === 'salas' && <Salas />}
         {pagina === 'usuarios' && <Usuarios />}
         {pagina === 'reservas' && <Reservas />}
+        {pagina === 'perfil' && <MeuPerfil />}
       </main>
     </div>
   );
