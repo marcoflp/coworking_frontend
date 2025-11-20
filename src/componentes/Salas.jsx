@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { buscarJSON } from '../servicos/api';
+import { api } from '../servicos/api';
+import { useAuth } from '../contextos/AuthContext';
 import Modal from './Modal';
 
 export default function Salas() {
@@ -7,13 +8,14 @@ export default function Salas() {
   const [formulario, setFormulario] = useState({ nome: '', capacidade: 1, localizacao: '', recursos: '' });
   const [erro, setErro] = useState(null);
   const [modalAberto, setModalAberto] = useState(false);
+  const { isAdmin } = useAuth();
 
   async function carregar() {
     try {
-      const dados = await buscarJSON('/salas');
-      setSalas(dados);
+      const response = await api.get('/salas');
+      setSalas(response.data);
     } catch (err) {
-      console.error('Erro ao carregar salas:', err);
+      setErro('Erro ao carregar salas');
     }
   }
 
@@ -26,28 +28,15 @@ export default function Salas() {
     setErro(null);
     try {
       if (formulario.id) {
-        await buscarJSON('/salas/' + formulario.id, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formulario)
-        });
+        await api.patch(`/salas/${formulario.id}`, formulario);
       } else {
-        const dados = {
-          ...formulario,
-          horario_inicio: new Date().toISOString(),
-          horario_fim: new Date().toISOString()
-        };
-        await buscarJSON('/salas', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dados)
-        });
+        await api.post('/salas', formulario);
       }
       setFormulario({ nome: '', capacidade: 1, localizacao: '', recursos: '' });
       setModalAberto(false);
       carregar();
     } catch (err) {
-      setErro(err.erro || err.message || 'Erro ao salvar sala');
+      setErro(err.response?.data?.erro || err.message || 'Erro ao salvar sala');
     }
   }
 
@@ -59,8 +48,12 @@ export default function Salas() {
 
   async function remover(id) {
     if (!confirm('Deletar sala?')) return;
-    await buscarJSON('/salas/' + id, { method: 'DELETE' });
-    carregar();
+    try {
+      await api.delete(`/salas/${id}`);
+      carregar();
+    } catch (error) {
+      setErro('Erro ao deletar sala');
+    }
   }
 
   return (
@@ -89,7 +82,9 @@ export default function Salas() {
               <td>{s.recursos}</td>
               <td>
                 <button onClick={() => abrirModal(s)}>Editar</button>
-                <button onClick={() => remover(s.id)}>Deletar</button>
+                {isAdmin() && (
+                  <button onClick={() => remover(s.id)}>Deletar</button>
+                )}
               </td>
             </tr>
           ))}

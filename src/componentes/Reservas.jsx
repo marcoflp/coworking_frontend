@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { buscarJSON } from '../servicos/api';
+import { api } from '../servicos/api';
+import { useAuth } from '../contextos/AuthContext';
 import Modal from './Modal';
 
 export default function Reservas() {
@@ -15,11 +16,21 @@ export default function Reservas() {
   });
   const [erro, setErro] = useState(null);
   const [modalAberto, setModalAberto] = useState(false);
+  const { isAdmin, usuario } = useAuth();
 
   async function carregar() {
-    setReservas(await buscarJSON('/reservas'));
-    setUsuarios(await buscarJSON('/usuarios'));
-    setSalas(await buscarJSON('/salas'));
+    try {
+      const [reservasRes, usuariosRes, salasRes] = await Promise.all([
+        api.get('/reservas'),
+        api.get('/usuarios'),
+        api.get('/salas')
+      ]);
+      setReservas(reservasRes.data);
+      setUsuarios(usuariosRes.data);
+      setSalas(salasRes.data);
+    } catch (error) {
+      setErro('Erro ao carregar dados');
+    }
   }
 
   useEffect(() => {
@@ -39,23 +50,15 @@ export default function Reservas() {
       };
       
       if (formulario.id) {
-        await buscarJSON('/reservas/' + formulario.id, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dados)
-        });
+        await api.patch(`/reservas/${formulario.id}`, dados);
       } else {
-        await buscarJSON('/reservas', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(dados)
-        });
+        await api.post('/reservas', dados);
       }
       setFormulario({ usuario_id: '', sala_id: '', horario_inicio: '', horario_fim: '', proposito: '' });
       setModalAberto(false);
       carregar();
     } catch (err) {
-      setErro(err.erro || err.message);
+      setErro(err.response?.data?.erro || err.message);
     }
   }
 
@@ -78,8 +81,12 @@ export default function Reservas() {
 
   async function remover(id) {
     if (!confirm('Deletar reserva?')) return;
-    await buscarJSON('/reservas/' + id, { method: 'DELETE' });
-    carregar();
+    try {
+      await api.delete(`/reservas/${id}`);
+      carregar();
+    } catch (error) {
+      setErro('Erro ao deletar reserva');
+    }
   }
 
   return (
@@ -109,8 +116,12 @@ export default function Reservas() {
               <td>{new Date(r.horario_fim).toLocaleString()}</td>
               <td>{r.proposito}</td>
               <td>
-                <button onClick={() => abrirModal(r)}>Editar</button>
-                <button onClick={() => remover(r.id)}>Deletar</button>
+                {(isAdmin() || r.usuario_id === usuario.id) && (
+                  <button onClick={() => abrirModal(r)}>Editar</button>
+                )}
+                {isAdmin() && (
+                  <button onClick={() => remover(r.id)}>Deletar</button>
+                )}
               </td>
             </tr>
           ))}
