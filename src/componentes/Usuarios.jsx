@@ -13,7 +13,12 @@ export default function Usuarios() {
   async function carregar() {
     try {
       const response = await api.get('/usuarios');
-      setUsuarios(response.data);
+      // Usuários comuns só veem seus próprios dados
+      if (isAdmin()) {
+        setUsuarios(response.data);
+      } else {
+        setUsuarios(response.data.filter(u => u.id === usuario.id));
+      }
     } catch (error) {
       setErro('Erro ao carregar usuários');
     }
@@ -59,7 +64,9 @@ export default function Usuarios() {
   return (
     <div>
       <h2>Usuários</h2>
-      <button className="btn-criar" onClick={() => abrirModal()}>+ Novo Usuário</button>
+      {isAdmin() && (
+        <button className="btn-criar" onClick={() => abrirModal()}>+ Novo Usuário</button>
+      )}
       
       <table>
         <thead>
@@ -79,9 +86,7 @@ export default function Usuarios() {
               <td>{u.email}</td>
               <td>{u.telefone}</td>
               <td>
-                {(isAdmin() || u.id === usuario.id) && (
-                  <button onClick={() => abrirModal(u)}>Editar</button>
-                )}
+                <button onClick={() => abrirModal(u)}>Editar</button>
                 {isAdmin() && (
                   <button onClick={() => remover(u.id)}>Deletar</button>
                 )}

@@ -16,6 +16,12 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [carregando, setCarregando] = useState(true);
 
+  const atualizarUsuario = (dadosAtualizados) => {
+    const usuarioAtualizado = { ...usuario, ...dadosAtualizados };
+    setUsuario(usuarioAtualizado);
+    localStorage.setItem('usuario', JSON.stringify(usuarioAtualizado));
+  };
+
   useEffect(() => {
     const tokenSalvo = localStorage.getItem('token');
     const usuarioSalvo = localStorage.getItem('usuario');
@@ -86,7 +92,8 @@ export const AuthProvider = ({ children }) => {
     registrar,
     logout,
     isAdmin,
-    isAuthenticated
+    isAuthenticated,
+    atualizarUsuario
   };
 
   return (

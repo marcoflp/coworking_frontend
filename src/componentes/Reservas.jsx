@@ -92,7 +92,9 @@ export default function Reservas() {
   return (
     <div>
       <h2>Reservas</h2>
-      <button className="btn-criar" onClick={() => abrirModal()}>+ Nova Reserva</button>
+      {isAdmin() && (
+        <button className="btn-criar" onClick={() => abrirModal()}>+ Nova Reserva</button>
+      )}
 
       <table>
         <thead>

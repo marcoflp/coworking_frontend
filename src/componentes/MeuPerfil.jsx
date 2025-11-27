@@ -3,7 +3,7 @@ import { useAuth } from '../contextos/AuthContext';
 import { api } from '../servicos/api';
 
 export default function MeuPerfil() {
-  const { usuario, logout } = useAuth();
+  const { usuario, atualizarUsuario } = useAuth();
   const [formulario, setFormulario] = useState({
     nome: usuario.nome,
     email: usuario.email,
@@ -19,11 +19,10 @@ export default function MeuPerfil() {
     setSucesso('');
 
     try {
-      const response = await api.patch(`/usuarios/${usuario.id}`, formulario);
+      await api.patch(`/usuarios/${usuario.id}`, formulario);
       
-      // Atualizar localStorage
-      const usuarioAtualizado = { ...usuario, ...formulario };
-      localStorage.setItem('usuario', JSON.stringify(usuarioAtualizado));
+      // Atualizar contexto e localStorage
+      atualizarUsuario(formulario);
       
       setSucesso('Dados atualizados com sucesso!');
       setEditando(false);
