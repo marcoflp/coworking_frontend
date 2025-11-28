@@ -13,12 +13,7 @@ export default function Usuarios() {
   async function carregar() {
     try {
       const response = await api.get('/usuarios');
-      // Usuários comuns só veem seus próprios dados
-      if (isAdmin()) {
-        setUsuarios(response.data);
-      } else {
-        setUsuarios(response.data.filter(u => u.id === usuario.id));
-      }
+      setUsuarios(response.data);
     } catch (error) {
       setErro('Erro ao carregar usuários');
     }
@@ -67,6 +62,9 @@ export default function Usuarios() {
       {isAdmin() && (
         <button className="btn-criar" onClick={() => abrirModal()}>+ Novo Usuário</button>
       )}
+      {!isAdmin() && usuarios.length === 0 && (
+        <p>Carregando...</p>
+      )}
       
       <table>
         <thead>
@@ -79,20 +77,22 @@ export default function Usuarios() {
           </tr>
         </thead>
         <tbody>
-          {usuarios.map(u => (
-            <tr key={u.id}>
-              <td>{u.id}</td>
-              <td>{u.nome}</td>
-              <td>{u.email}</td>
-              <td>{u.telefone}</td>
-              <td>
-                <button onClick={() => abrirModal(u)}>Editar</button>
-                {isAdmin() && (
-                  <button onClick={() => remover(u.id)}>Deletar</button>
-                )}
-              </td>
-            </tr>
-          ))}
+          {usuarios
+            .filter(u => isAdmin() || u.id === usuario.id)
+            .map(u => (
+              <tr key={u.id}>
+                <td>{u.id}</td>
+                <td>{u.nome}</td>
+                <td>{u.email}</td>
+                <td>{u.telefone}</td>
+                <td>
+                  <button onClick={() => abrirModal(u)}>Editar</button>
+                  {isAdmin() && (
+                    <button onClick={() => remover(u.id)}>Deletar</button>
+                  )}
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
 

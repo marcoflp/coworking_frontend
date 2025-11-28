@@ -28,7 +28,9 @@ export default function Reservas() {
       setReservas(reservasRes.data);
       setUsuarios(usuariosRes.data);
       setSalas(salasRes.data);
+      console.log('Salas carregadas:', salasRes.data);
     } catch (error) {
+      console.error('Erro ao carregar:', error);
       setErro('Erro ao carregar dados');
     }
   }
