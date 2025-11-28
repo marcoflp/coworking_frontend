@@ -5,7 +5,7 @@ import Modal from './Modal';
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
-  const [formulario, setFormulario] = useState({ nome: '', email: '', telefone: '' });
+  const [formulario, setFormulario] = useState({ nome: '', email: '', telefone: '', senha: '' });
   const [erro, setErro] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
@@ -56,6 +56,12 @@ export default function Usuarios() {
         telefone: formulario.telefone
       };
       
+      if (!formulario.id) {
+        dados.senha = formulario.senha;
+      } else if (formulario.senha) {
+        dados.senha = formulario.senha;
+      }
+      
       console.log('🔄 Enviando dados:', dados);
       console.log('📍 URL:', formulario.id ? `/usuarios/${formulario.id}` : '/usuarios');
       console.log('🔧 Método:', formulario.id ? 'PATCH' : 'POST');
@@ -69,7 +75,7 @@ export default function Usuarios() {
       
       console.log('✅ Resposta da API:', response.status, response.data);
       
-      setFormulario({ nome: '', email: '', telefone: '' });
+      setFormulario({ nome: '', email: '', telefone: '', senha: '' });
       setModalAberto(false);
       carregar();
     } catch (err) {
@@ -86,10 +92,11 @@ export default function Usuarios() {
         id: usuarioParam.id,
         nome: usuarioParam.nome || '',
         email: usuarioParam.email || '',
-        telefone: usuarioParam.telefone || ''
+        telefone: usuarioParam.telefone || '',
+        senha: ''
       });
     } else {
-      setFormulario({ nome: '', email: '', telefone: '' });
+      setFormulario({ nome: '', email: '', telefone: '', senha: '' });
     }
     setErro(null);
     setModalAberto(true);
@@ -134,7 +141,10 @@ export default function Usuarios() {
       )}
       
       {!isAdmin() && (
-        <p><strong>Seus dados:</strong></p>
+        <>
+          <p><strong>Seus dados:</strong></p>
+          <button className="btn-criar" onClick={() => abrirModal(usuario)}>Editar Perfil</button>
+        </>
       )}
       
       <table>
@@ -168,7 +178,7 @@ export default function Usuarios() {
                         <button onClick={() => remover(u.id)}>Deletar</button>
                       </>
                     )}
-                    {!isAdmin() && <span>Visualização</span>}
+                    {!isAdmin() && <button onClick={() => abrirModal(u)}>Editar</button>}
                   </td>
                 </tr>
               ))
@@ -199,6 +209,13 @@ export default function Usuarios() {
             placeholder="Telefone"
             value={formulario.telefone}
             onChange={e => setFormulario({ ...formulario, telefone: e.target.value })}
+          />
+          <input
+            type="password"
+            placeholder={formulario.id ? "Nova Senha (deixe vazio para não alterar)" : "Senha"}
+            value={formulario.senha}
+            onChange={e => setFormulario({ ...formulario, senha: e.target.value })}
+            required={!formulario.id}
           />
           <div className="form-actions">
             <button type="submit" className="btn-submit">{formulario.id ? 'Atualizar' : 'Criar'}</button>
