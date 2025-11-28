@@ -7,21 +7,31 @@ export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
   const [formulario, setFormulario] = useState({ nome: '', email: '', telefone: '' });
   const [erro, setErro] = useState(null);
+  const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const { isAdmin, usuario } = useAuth();
 
   async function carregar() {
     try {
+      setCarregando(true);
       const response = await api.get('/usuarios');
       setUsuarios(response.data);
+      setErro(null);
     } catch (error) {
-      setErro('Erro ao carregar usuários');
+      setErro('Erro ao carregar usuários: ' + (error.response?.data?.erro || error.message));
+      if (!isAdmin() && usuario) {
+        setUsuarios([usuario]);
+      }
+    } finally {
+      setCarregando(false);
     }
   }
 
   useEffect(() => {
-    carregar();
-  }, []);
+    if (usuario) {
+      carregar();
+    }
+  }, [usuario, isAdmin]);
 
   async function salvar(e) {
     e.preventDefault();
@@ -56,14 +66,36 @@ export default function Usuarios() {
     }
   }
 
+  if (carregando) {
+    return (
+      <div>
+        <h2>Usuários</h2>
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!usuario) {
+    return (
+      <div>
+        <h2>Usuários</h2>
+        <p>Erro: Usuário não encontrado</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2>Usuários</h2>
+      
+      {erro && <div className="erro">{erro}</div>}
+      
       {isAdmin() && (
         <button className="btn-criar" onClick={() => abrirModal()}>+ Novo Usuário</button>
       )}
-      {!isAdmin() && usuarios.length === 0 && (
-        <p>Carregando...</p>
+      
+      {!isAdmin() && (
+        <p><strong>Seus dados:</strong></p>
       )}
       
       <table>
@@ -77,9 +109,12 @@ export default function Usuarios() {
           </tr>
         </thead>
         <tbody>
-          {usuarios
-            .filter(u => isAdmin() || u.id === usuario.id)
-            .map(u => (
+          {usuarios.length === 0 ? (
+            <tr>
+              <td colSpan="5">Nenhum usuário encontrado</td>
+            </tr>
+          ) : (
+            usuarios.map(u => (
               <tr key={u.id}>
                 <td>{u.id}</td>
                 <td>{u.nome}</td>
@@ -92,7 +127,8 @@ export default function Usuarios() {
                   )}
                 </td>
               </tr>
-            ))}
+            ))
+          )}
         </tbody>
       </table>
 

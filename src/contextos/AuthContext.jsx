@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, senha) => {
     try {
-      const response = await api.post('/usuarios/login', { email, senha });
+      const response = await api.post('/auth/login', { email, senha });
       const { token: novoToken, usuario: novoUsuario } = response.data;
       
       setToken(novoToken);
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
 
   const registrar = async (dadosUsuario) => {
     try {
-      await api.post('/usuarios/registrar', dadosUsuario);
+      await api.post('/auth/registrar', dadosUsuario);
       return { sucesso: true };
     } catch (error) {
       return { 
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAdmin = () => {
-    return usuario?.tipo === 'admin';
+    return usuario?.role === 'admin';
   };
 
   const isAuthenticated = () => {

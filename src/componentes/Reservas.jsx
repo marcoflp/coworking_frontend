@@ -20,17 +20,23 @@ export default function Reservas() {
 
   async function carregar() {
     try {
-      const [reservasRes, usuariosRes, salasRes] = await Promise.all([
+      const promises = [
         api.get('/reservas'),
-        api.get('/usuarios'),
         api.get('/salas')
-      ]);
-      setReservas(reservasRes.data);
-      setUsuarios(usuariosRes.data);
-      setSalas(salasRes.data);
-      console.log('Salas carregadas:', salasRes.data);
+      ];
+      
+      if (isAdmin()) {
+        promises.push(api.get('/usuarios'));
+      }
+      
+      const responses = await Promise.all(promises);
+      setReservas(responses[0].data);
+      setSalas(responses[1].data);
+      
+      if (isAdmin() && responses[2]) {
+        setUsuarios(responses[2].data);
+      }
     } catch (error) {
-      console.error('Erro ao carregar:', error);
       setErro('Erro ao carregar dados');
     }
   }
