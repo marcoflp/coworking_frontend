@@ -13,18 +13,27 @@ export default function Usuarios() {
 
   async function carregar() {
     try {
+      console.log('🔄 Recarregando lista de usuários...');
       setCarregando(true);
       if (isAdmin()) {
+        console.log('👑 Admin: buscando todos os usuários');
         const response = await api.get('/usuarios');
+        console.log('📊 Dados recebidos:', response.data);
         setUsuarios(response.data);
       } else {
+        console.log('👤 Usuário comum: usando dados do contexto');
         setUsuarios([usuario]);
       }
       setErro(null);
+      console.log('✅ Lista atualizada com sucesso');
     } catch (error) {
+      console.error('❌ Erro ao carregar:', error);
       setErro('Erro ao carregar usuários: ' + (error.response?.data?.erro || error.message));
-      if (!isAdmin() && usuario) {
+      if (!isAdmin() && usuario && usuario.id) {
+        console.log('🔄 Fallback: mostrando dados do contexto');
         setUsuarios([usuario]);
+      } else {
+        setUsuarios([]);
       }
     } finally {
       setCarregando(false);
@@ -41,15 +50,32 @@ export default function Usuarios() {
     e.preventDefault();
     setErro(null);
     try {
+      const dados = {
+        nome: formulario.nome,
+        email: formulario.email,
+        telefone: formulario.telefone
+      };
+      
+      console.log('🔄 Enviando dados:', dados);
+      console.log('📍 URL:', formulario.id ? `/usuarios/${formulario.id}` : '/usuarios');
+      console.log('🔧 Método:', formulario.id ? 'PATCH' : 'POST');
+      
+      let response;
       if (formulario.id) {
-        await api.patch(`/usuarios/${formulario.id}`, formulario);
+        response = await api.patch(`/usuarios/${formulario.id}`, dados);
       } else {
-        await api.post('/usuarios', formulario);
+        response = await api.post('/usuarios', dados);
       }
+      
+      console.log('✅ Resposta da API:', response.status, response.data);
+      
       setFormulario({ nome: '', email: '', telefone: '' });
       setModalAberto(false);
       carregar();
     } catch (err) {
+      console.error('❌ Erro na requisição:', err);
+      console.error('📊 Status:', err.response?.status);
+      console.error('📝 Dados do erro:', err.response?.data);
       setErro(err.response?.data?.erro || err.message);
     }
   }
@@ -103,7 +129,9 @@ export default function Usuarios() {
       
       {erro && <div className="erro">{erro}</div>}
       
-      <button className="btn-criar" onClick={() => abrirModal()}>+ Novo Usuário</button>
+      {isAdmin() && (
+        <button className="btn-criar" onClick={() => abrirModal()}>+ Novo Usuário</button>
+      )}
       
       {!isAdmin() && (
         <p><strong>Seus dados:</strong></p>
@@ -125,20 +153,25 @@ export default function Usuarios() {
               <td colSpan="5">Nenhum usuário encontrado</td>
             </tr>
           ) : (
-            usuarios.map(u => (
-              <tr key={u.id}>
-                <td>{u.id}</td>
-                <td>{u.nome}</td>
-                <td>{u.email}</td>
-                <td>{u.telefone}</td>
-                <td>
-                  <button onClick={() => abrirModal(u)}>Editar</button>
-                  {isAdmin() && (
-                    <button onClick={() => remover(u.id)}>Deletar</button>
-                  )}
-                </td>
-              </tr>
-            ))
+            usuarios
+              .filter(u => u && u.id)
+              .map(u => (
+                <tr key={u.id}>
+                  <td>{u.id}</td>
+                  <td>{u.nome}</td>
+                  <td>{u.email}</td>
+                  <td>{u.telefone}</td>
+                  <td>
+                    {isAdmin() && (
+                      <>
+                        <button onClick={() => abrirModal(u)}>Editar</button>
+                        <button onClick={() => remover(u.id)}>Deletar</button>
+                      </>
+                    )}
+                    {!isAdmin() && <span>Visualização</span>}
+                  </td>
+                </tr>
+              ))
           )}
         </tbody>
       </table>

@@ -57,6 +57,9 @@ export default function Reservas() {
         proposito: formulario.proposito
       };
       
+      console.log('📝 Dados da reserva:', dados);
+      console.log('📝 Formulário:', formulario);
+      
       if (formulario.id) {
         await api.patch(`/reservas/${formulario.id}`, dados);
       } else {
@@ -66,6 +69,7 @@ export default function Reservas() {
       setModalAberto(false);
       carregar();
     } catch (err) {
+      console.error('❌ Erro ao salvar reserva:', err.response?.data);
       setErro(err.response?.data?.erro || err.message);
     }
   }
@@ -81,9 +85,10 @@ export default function Reservas() {
         proposito: reserva.proposito || ''
       });
     } else {
+      console.log('👤 Usuario do contexto:', usuario);
       // Usuário comum cria reserva para si mesmo
       setFormulario({ 
-        usuario_id: isAdmin() ? '' : usuario.id, 
+        usuario_id: isAdmin() ? '' : String(usuario?.id || ''), 
         sala_id: '', 
         horario_inicio: '', 
         horario_fim: '', 
@@ -166,7 +171,7 @@ export default function Reservas() {
           ) : (
             <div className="form-group">
               <label>Usuário:</label>
-              <input type="text" value={usuario.nome} disabled style={{ opacity: 0.7 }} />
+              <input type="text" value={usuario?.nome || 'Usuário não encontrado'} disabled style={{ opacity: 0.7 }} />
             </div>
           )}
           <select

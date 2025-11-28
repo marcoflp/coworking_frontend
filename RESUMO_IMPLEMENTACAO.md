@@ -74,7 +74,7 @@
 ```javascript
 // AuthContext.jsx
 - isAdmin()    → Verifica se é administrador
-- usuario.tipo → 'admin' ou 'user'
+- usuario.role → 'admin' ou 'user'
 ```
 
 ### 3️⃣ Camada de Proteção de Rotas
@@ -95,20 +95,18 @@ config.headers.Authorization = `Bearer ${token}`;
 
 ## 🎭 TIPOS DE USUÁRIO
 
-### 👤 Usuário Comum (`tipo: 'user'`)
+### 👤 Usuário Comum (`role: 'user'`)
 **PODE:**
 - ✅ Ver seus próprios dados
 - ✅ Editar seu perfil
-- ✅ Ver salas (sem editar/deletar)
-- ✅ Editar suas próprias reservas
+- ✅ Criar/editar salas
+- ✅ Criar/editar reservas
 
 **NÃO PODE:**
 - ❌ Ver outros usuários
 - ❌ Deletar qualquer registro
-- ❌ Criar/editar salas
-- ❌ Criar reservas (apenas admin)
 
-### 👑 Administrador (`tipo: 'admin'`)
+### 👑 Administrador (`role: 'admin'`)
 **PODE TUDO:**
 - ✅ Ver todos os usuários
 - ✅ Criar/editar/deletar usuários
