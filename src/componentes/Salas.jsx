@@ -59,9 +59,7 @@ export default function Salas() {
   return (
     <div>
       <h2>Salas</h2>
-      {isAdmin() && (
-        <button className="btn-criar" onClick={() => abrirModal()}>+ Nova Sala</button>
-      )}
+      <button className="btn-criar" onClick={() => abrirModal()}>+ Nova Sala</button>
       
       <table>
         <thead>
@@ -83,11 +81,9 @@ export default function Salas() {
               <td>{s.localizacao}</td>
               <td>{s.recursos}</td>
               <td>
+                <button onClick={() => abrirModal(s)}>Editar</button>
                 {isAdmin() && (
-                  <>
-                    <button onClick={() => abrirModal(s)}>Editar</button>
-                    <button onClick={() => remover(s.id)}>Deletar</button>
-                  </>
+                  <button onClick={() => remover(s.id)}>Deletar</button>
                 )}
               </td>
             </tr>
