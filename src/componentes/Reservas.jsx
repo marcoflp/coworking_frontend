@@ -73,7 +73,14 @@ export default function Reservas() {
         proposito: reserva.proposito || ''
       });
     } else {
-      setFormulario({ usuario_id: '', sala_id: '', horario_inicio: '', horario_fim: '', proposito: '' });
+      // Usuário comum cria reserva para si mesmo
+      setFormulario({ 
+        usuario_id: isAdmin() ? '' : usuario.id, 
+        sala_id: '', 
+        horario_inicio: '', 
+        horario_fim: '', 
+        proposito: '' 
+      });
     }
     setErro(null);
     setModalAberto(true);
@@ -135,18 +142,25 @@ export default function Reservas() {
       >
         {erro && <div className="erro">{erro}</div>}
         <form onSubmit={salvar}>
-          <select
-            value={formulario.usuario_id}
-            onChange={e => setFormulario({ ...formulario, usuario_id: e.target.value })}
-            required
-          >
-            <option value="">Selecione o usuário</option>
-            {usuarios.map(u => (
-              <option key={u.id} value={u.id}>
-                {u.nome} ({u.email})
-              </option>
-            ))}
-          </select>
+          {isAdmin() ? (
+            <select
+              value={formulario.usuario_id}
+              onChange={e => setFormulario({ ...formulario, usuario_id: e.target.value })}
+              required
+            >
+              <option value="">Selecione o usuário</option>
+              {usuarios.map(u => (
+                <option key={u.id} value={u.id}>
+                  {u.nome} ({u.email})
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="form-group">
+              <label>Usuário:</label>
+              <input type="text" value={usuario.nome} disabled style={{ opacity: 0.7 }} />
+            </div>
+          )}
           <select
             value={formulario.sala_id}
             onChange={e => setFormulario({ ...formulario, sala_id: e.target.value })}
