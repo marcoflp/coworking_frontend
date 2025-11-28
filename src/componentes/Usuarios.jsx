@@ -14,8 +14,12 @@ export default function Usuarios() {
   async function carregar() {
     try {
       setCarregando(true);
-      const response = await api.get('/usuarios');
-      setUsuarios(response.data);
+      if (isAdmin()) {
+        const response = await api.get('/usuarios');
+        setUsuarios(response.data);
+      } else {
+        setUsuarios([usuario]);
+      }
       setErro(null);
     } catch (error) {
       setErro('Erro ao carregar usuários: ' + (error.response?.data?.erro || error.message));
@@ -90,9 +94,7 @@ export default function Usuarios() {
       
       {erro && <div className="erro">{erro}</div>}
       
-      {isAdmin() && (
-        <button className="btn-criar" onClick={() => abrirModal()}>+ Novo Usuário</button>
-      )}
+      <button className="btn-criar" onClick={() => abrirModal()}>+ Novo Usuário</button>
       
       {!isAdmin() && (
         <p><strong>Seus dados:</strong></p>
