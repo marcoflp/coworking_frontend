@@ -59,7 +59,7 @@ export default function MeuPerfil() {
       <div className="perfil-card">
         <div className="perfil-info">
           <p><strong>ID:</strong> {usuario.id}</p>
-          <p><strong>Tipo:</strong> {usuario.tipo === 'admin' ? 'Administrador' : 'Usuário'}</p>
+          <p><strong>Tipo:</strong> {usuario.role === 'admin' ? 'Administrador' : 'Usuário'}</p>
         </div>
 
         {erro && <div className="erro">{erro}</div>}

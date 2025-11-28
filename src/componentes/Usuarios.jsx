@@ -54,8 +54,17 @@ export default function Usuarios() {
     }
   }
 
-  function abrirModal(usuario = null) {
-    setFormulario(usuario || { nome: '', email: '', telefone: '' });
+  function abrirModal(usuarioParam = null) {
+    if (usuarioParam) {
+      setFormulario({
+        id: usuarioParam.id,
+        nome: usuarioParam.nome || '',
+        email: usuarioParam.email || '',
+        telefone: usuarioParam.telefone || ''
+      });
+    } else {
+      setFormulario({ nome: '', email: '', telefone: '' });
+    }
     setErro(null);
     setModalAberto(true);
   }
