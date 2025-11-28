@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contextos/AuthContext';
 import { api } from '../servicos/api';
 
 export default function MeuPerfil() {
   const { usuario, atualizarUsuario } = useAuth();
   const [formulario, setFormulario] = useState({
-    nome: usuario.nome,
-    email: usuario.email,
-    telefone: usuario.telefone || ''
+    nome: '',
+    email: '',
+    telefone: ''
   });
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
-  const [editando, setEditando] = useState(false);
+
+  useEffect(() => {
+    if (usuario) {
+      setFormulario({
+        nome: usuario.nome || '',
+        email: usuario.email || '',
+        telefone: usuario.telefone || ''
+      });
+    }
+  }, [usuario]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +34,6 @@ export default function MeuPerfil() {
       atualizarUsuario(formulario);
       
       setSucesso('Dados atualizados com sucesso!');
-      setEditando(false);
     } catch (error) {
       setErro(error.response?.data?.erro || 'Erro ao atualizar dados');
     }
@@ -33,14 +41,16 @@ export default function MeuPerfil() {
 
   const cancelar = () => {
     setFormulario({
-      nome: usuario.nome,
-      email: usuario.email,
+      nome: usuario.nome || '',
+      email: usuario.email || '',
       telefone: usuario.telefone || ''
     });
-    setEditando(false);
+
     setErro('');
     setSucesso('');
   };
+
+  if (!usuario) return <div>Carregando...</div>;
 
   return (
     <div className="perfil-container">
@@ -62,7 +72,6 @@ export default function MeuPerfil() {
               type="text"
               value={formulario.nome}
               onChange={(e) => setFormulario({ ...formulario, nome: e.target.value })}
-              disabled={!editando}
               required
             />
           </div>
@@ -73,7 +82,6 @@ export default function MeuPerfil() {
               type="email"
               value={formulario.email}
               onChange={(e) => setFormulario({ ...formulario, email: e.target.value })}
-              disabled={!editando}
               required
             />
           </div>
@@ -84,21 +92,13 @@ export default function MeuPerfil() {
               type="text"
               value={formulario.telefone}
               onChange={(e) => setFormulario({ ...formulario, telefone: e.target.value })}
-              disabled={!editando}
+              placeholder="(00) 00000-0000"
             />
           </div>
 
           <div className="perfil-actions">
-            {!editando ? (
-              <button type="button" onClick={() => setEditando(true)} className="btn-editar">
-                Editar Perfil
-              </button>
-            ) : (
-              <>
-                <button type="submit" className="btn-salvar">Salvar</button>
-                <button type="button" onClick={cancelar} className="btn-cancelar">Cancelar</button>
-              </>
-            )}
+            <button type="submit" className="btn-salvar">💾 Salvar Alterações</button>
+            <button type="button" onClick={cancelar} className="btn-cancelar">🔄 Resetar</button>
           </div>
         </form>
       </div>
